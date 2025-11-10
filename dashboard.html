@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(45deg, #f6d365, #fda085);
+            min-height: 100vh;
+        }
+        
+        header {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        
+        select, button {
+            padding: 10px 15px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        
+        button {
+            background: #fda085;
+            color: white;
+            border: none;
+        }
+        
+        button:hover {
+            background: #fd8c5a;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        th {
+            background: #fda085;
+            color: white;
+        }
+        
+        .status-pending { color: #ff9800; font-weight: bold; }
+        .status-progress { color: #2196f3; font-weight: bold; }
+        .status-resolved { color: #4caf50; font-weight: bold; }
+        
+        .action-btn {
+            padding: 5px 10px;
+            margin: 2px;
+            font-size: 12px;
+        }
+        
+        .btn-progress { background: #2196f3; }
+        .btn-resolve { background: #4caf50; }
+        
+        .logout-btn {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <div>
+            <span>Welcome, Admin!</span>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="controls">
+            <h2>Complaints Management</h2>
+            <div>
+                <select id="statusFilter" onchange="filterComplaints()">
+                    <option value="all">All Status</option>
+                    <option value="Pending">Pending</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Resolved">Resolved</option>
+                </select>
+                <button onclick="loadComplaints()">Refresh</button>
+            </div>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Student</th>
+                    <th>Title</th>
+                    <th>Category</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="complaintsTable">
+                <tr>
+                    <td>1001</td>
+                    <td>John Doe</td>
+                    <td>WiFi Connection Issue</td>
+                    <td>Network</td>
+                    <td><span class="status-pending">Pending</span></td>
+                    <td>2024-01-15</td>
+                    <td>
+                        <button class="action-btn btn-progress" onclick="updateStatus(1001, 'In Progress')">In Progress</button>
+                        <button class="action-btn btn-resolve" onclick="updateStatus(1001, 'Resolved')">Resolve</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>1002</td>
+                    <td>Jane Smith</td>
+                    <td>Classroom Light Not Working</td>
+                    <td>Electric</td>
+                    <td><span class="status-progress">In Progress</span></td>
+                    <td>2024-01-14</td>
+                    <td>
+                        <button class="action-btn btn-resolve" onclick="updateStatus(1002, 'Resolved')">Resolve</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>1003</td>
+                    <td>Mike Johnson</td>
+                    <td>AC Not Working</td>
+                    <td>Maintenance</td>
+                    <td><span class="status-resolved">Resolved</span></td>
+                    <td>2024-01-13</td>
+                    <td>-</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Check admin authentication
+        if (!localStorage.getItem('isAdmin')) {
+            window.location.href = 'login.html';
+        }
+
+        function updateStatus(id, status) {
+            const row = event.target.closest('tr');
+            const statusCell = row.cells[4];
+            const actionsCell = row.cells[6];
+            
+            // Update status display
+            statusCell.innerHTML = `<span class="status-${status.toLowerCase().replace(' ', '-')}">${status}</span>`;
+            
+            // Update action buttons
+            if (status === 'Resolved') {
+                actionsCell.innerHTML = '-';
+            } else if (status === 'In Progress') {
+                actionsCell.innerHTML = `<button class="action-btn btn-resolve" onclick="updateStatus(${id}, 'Resolved')">Resolve</button>`;
+            }
+            
+            alert(`Complaint ${id} status updated to: ${status}`);
+        }
+
+        function filterComplaints() {
+            const filter = document.getElementById('statusFilter').value;
+            const rows = document.querySelectorAll('#complaintsTable tr');
+            
+            rows.forEach(row => {
+                if (filter === 'all') {
+                    row.style.display = '';
+                } else {
+                    const status = row.cells[4].textContent;
+                    row.style.display = status.includes(filter) ? '' : 'none';
+                }
+            });
+        }
+
+        function loadComplaints() {
+            alert('Complaints refreshed!');
+        }
+
+        function logout() {
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
